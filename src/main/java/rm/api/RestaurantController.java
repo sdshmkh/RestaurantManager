@@ -142,7 +142,7 @@ public class RestaurantController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/menus/menuitems")
     public List<MenuItem> findMenuItemsByName(@PathParam("name") String name) {
-        List<MenuItem> menuItemList = menuItemsRepository.findByNameLike(name);
+        List<MenuItem> menuItemList = menuItemsRepository.findByNameLike("%"+name+"%");
         return menuItemList;
     }
 
