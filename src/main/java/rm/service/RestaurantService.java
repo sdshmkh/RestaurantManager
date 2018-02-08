@@ -26,7 +26,7 @@ public class RestaurantService {
         return restaurantList;
     }
 
-    public Restaurant createRestaaurant(Restaurant restaurant){
+    public Restaurant saveRestaaurant(Restaurant restaurant){
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
         return savedRestaurant;
     }
@@ -48,10 +48,5 @@ public class RestaurantService {
             throw new RuntimeException("Restaurant with " + id + " does not exist");
         }
         return restaurant;
-    }
-
-    public Restaurant saveRestaurant(Restaurant restaurant){
-        Restaurant restaurant1 = restaurantRepository.save(restaurant);
-        return restaurant1;
     }
 }

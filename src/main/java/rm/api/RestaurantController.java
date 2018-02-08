@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import rm.dao.MenuItemsRepository;
-import rm.dao.MenuRepository;
 import rm.model.Menu;
 import rm.model.MenuItem;
 import rm.model.MenuType;
 import rm.model.Restaurant;
+import rm.service.MenuItemService;
+import rm.service.MenuService;
 import rm.service.RestaurantService;
 
 import javax.websocket.server.PathParam;
@@ -22,10 +22,10 @@ public class RestaurantController {
     private RestaurantService restaurantService;
 
     @Autowired
-    private MenuRepository menuRepository;
+    private MenuService menuService;
 
     @Autowired
-    private MenuItemsRepository menuItemsRepository;
+    private MenuItemService menuItemService;
 
     @RequestMapping(method = RequestMethod.GET, path = "/{id}")
     public Restaurant getRestaurantById(@PathVariable("id") Long id) {
@@ -41,7 +41,7 @@ public class RestaurantController {
 
     @RequestMapping(method = RequestMethod.POST)
     public Restaurant createRestaurant(@RequestBody Restaurant restaurant) {
-        Restaurant savedRestaurant = restaurantService.createRestaaurant(restaurant);
+        Restaurant savedRestaurant = restaurantService.saveRestaaurant(restaurant);
         return savedRestaurant;
     }
 
@@ -61,87 +61,69 @@ public class RestaurantController {
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/menus")
     public List<Menu> findMenusByRestaurantId(@PathVariable("id") Long id) {
         Restaurant restaurant = restaurantService.findById(id);
-        return restaurant.getMenus();
+        List<Menu> menuList = restaurant.getMenus();
+        return menuList;
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/{id}/menus/{menu_id}")
-    public Menu findMenuById(@PathVariable("id") Long id,
-                             @PathVariable("menu_id") long menu_id) {
-        Menu menu = menuRepository.findOne(menu_id);
-        Restaurant restaurant = restaurantService.findById(id);
-        restaurant.getMenus().remove(menu);
-        restaurantService.saveRestaurant(restaurant);
+    public Menu findMenuById(@PathVariable("menu_id") long menu_id) {
+        Menu menu = menuService.deleteById(menu_id);
         return menu;
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/{id}/menus")
-    public Menu addMenu(@RequestBody Menu menu,
+    public Menu addMenu(@RequestBody Menu createdMenu,
                         @PathVariable("id") Long id) {
-        Restaurant restaurant = restaurantService.findById(id);
-        restaurant.getMenus().add(menu);
-        restaurantService.saveRestaurant(restaurant);
+        Menu menu = menuService.createMenu(createdMenu, restaurantService, id);
         return menu;
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/{id}/menus/{menu_id}")
     public Menu editMenu(@RequestBody Menu updatedMenu,
-                         @PathVariable("id") Long id) {
-        Restaurant restaurant = restaurantService.findById(id);
-        Menu menu = menuRepository.findOne(updatedMenu.getId());
-        restaurant.getMenus().remove(menu);
-        restaurant.getMenus().add(updatedMenu);
-        restaurantService.saveRestaurant(restaurant);
-        return updatedMenu;
+                         @PathVariable("menu_id") Long menuId) {
+        Menu menu = menuService.editMenu(menuId, updatedMenu);
+        return menu;
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/menus/{menu_id}/menuitems")
     public List<MenuItem> findMenuItemsByMenuId(@PathVariable("id") Long id,
                                                 @PathVariable("menu_id") Long menuId) {
-        Menu menu = menuRepository.findOne(menuId);
-        List<MenuItem> menuItems = menu.getItems();
+        List<MenuItem> menuItems = menuItemService.menuItemsByMenuId(menuId, menuService);
         return menuItems;
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/{id}/menus/{menu_id}/menuitems")
-    public List<MenuItem> createMenuItem(@PathVariable("id") Long id,
+    public MenuItem createMenuItem(@PathVariable("id") Long id,
                                          @PathVariable("menu_id") Long menuId,
                                          @RequestBody MenuItem menuItem) {
-        Menu menu = menuRepository.findOne(menuId);
-        List<MenuItem> menuItems = menu.getItems();
-        menuItems.add(menuItem);
-        Menu save = menuRepository.save(menu);
-        return menuItems;
+        MenuItem item = menuItemService.createMenuItem(menuId, menuService, menuItem);
+        return item;
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/{id}/menus/{menu_id}/menuitems/{menuitems_id}")
     public MenuItem deleteMenuItem(@PathVariable("menuitems_id") Long menuItemsId,
                                    @PathVariable("menu_id") Long menuId) {
-        MenuItem menuItem = menuItemsRepository.findOne(menuItemsId);
-        menuItemsRepository.delete(menuItemsId);
+        MenuItem menuItem = menuItemService.deleteMenuItem(menuItemsId);
         return menuItem;
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/{id}/menus/{menu_id}/menuitems/{menuitems_id}")
     public MenuItem updateMenuItem(@PathVariable("menuitems_id") Long menuItemsId,
                                    @RequestBody MenuItem menuItem) {
-        MenuItem item = menuItemsRepository.findOne(menuItemsId);
-        item.setName(menuItem.getName());
-        item.setCalorieCount(menuItem.getCalorieCount());
-        item.setDescription(menuItem.getDescription());
-        item.setPrice(menuItem.getPrice());
-        menuItemsRepository.save(item);
+        MenuItem item = menuItemService.editMenuItem(menuItemsId, menuItem);
         return item;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/menus/menuitems")
+    @RequestMapping(method = RequestMethod.GET, path = "/menus/{menu_id}/menuitems")
     public List<MenuItem> findMenuItemsByName(@PathParam("name") String name) {
-        List<MenuItem> menuItemList = menuItemsRepository.findByNameLike("%"+name+"%");
+        List<MenuItem> menuItemList = menuItemService.findMenuItemByName(name);
         return menuItemList;
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/menus")
     public List<Menu> findMenuByType(@PathParam("type") MenuType type) {
-        return menuRepository.findByType(type);
+        List<Menu> menuList = menuService.findByType(type);
+        return menuList;
     }
 
 }
