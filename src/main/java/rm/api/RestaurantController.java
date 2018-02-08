@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import rm.dao.MenuItemsRepository;
 import rm.dao.MenuRepository;
-import rm.dao.RestaurantRepository;
 import rm.model.Menu;
 import rm.model.MenuItem;
 import rm.model.MenuType;
 import rm.model.Restaurant;
+import rm.service.RestaurantService;
 
 import javax.websocket.server.PathParam;
 
@@ -19,7 +19,7 @@ import javax.websocket.server.PathParam;
 public class RestaurantController {
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
+    private RestaurantService restaurantService;
 
     @Autowired
     private MenuRepository menuRepository;
@@ -29,45 +29,38 @@ public class RestaurantController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/{id}")
     public Restaurant getRestaurantById(@PathVariable("id") Long id) {
-        Restaurant restaurant = restaurantRepository.findOne(id);
+        Restaurant restaurant = restaurantService.findById(id);
         return restaurant;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Restaurant> findRestaurantByName(@RequestParam("name") String name) {
-        List<Restaurant> restaurants = restaurantRepository.findByNameLike("%" + name + "%");
+        List<Restaurant> restaurants = restaurantService.findByName(name);
         return restaurants;
     }
 
     @RequestMapping(method = RequestMethod.POST)
     public Restaurant createRestaurant(@RequestBody Restaurant restaurant) {
-        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        Restaurant savedRestaurant = restaurantService.createRestaaurant(restaurant);
         return savedRestaurant;
     }
 
     @RequestMapping(method = RequestMethod.DELETE)
-    public void deleteRestaurant(@RequestParam("id") Long id) {
-        restaurantRepository.delete(id);
+    public Restaurant deleteRestaurant(@RequestParam("id") Long id) {
+        Restaurant restaurant = restaurantService.deleteById(id);
+        return restaurant;
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     public Restaurant updateRestaurant(@RequestParam("id") Long id,
                                        @RequestBody Restaurant updatedRestaurant) {
-        Restaurant restaurant = restaurantRepository.findOne(id);
-        if (restaurant != null) {
-            restaurant.setName(updatedRestaurant.getName());
-            restaurant.setAddress(updatedRestaurant.getAddress());
-            restaurant.setTimings(updatedRestaurant.getTimings());
-            restaurant = restaurantRepository.save(restaurant);
-        } else {
-            throw new RuntimeException("Restaurant with " + id + " does not exist");
-        }
+        Restaurant restaurant = restaurantService.updateRestaurantById(id, updatedRestaurant);
         return restaurant;
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{id}/menus")
     public List<Menu> findMenusByRestaurantId(@PathVariable("id") Long id) {
-        Restaurant restaurant = restaurantRepository.findOne(id);
+        Restaurant restaurant = restaurantService.findById(id);
         return restaurant.getMenus();
     }
 
@@ -75,29 +68,29 @@ public class RestaurantController {
     public Menu findMenuById(@PathVariable("id") Long id,
                              @PathVariable("menu_id") long menu_id) {
         Menu menu = menuRepository.findOne(menu_id);
-        Restaurant restaurant = restaurantRepository.findOne(id);
+        Restaurant restaurant = restaurantService.findById(id);
         restaurant.getMenus().remove(menu);
-        restaurantRepository.save(restaurant);
+        restaurantService.saveRestaurant(restaurant);
         return menu;
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/{id}/menus")
     public Menu addMenu(@RequestBody Menu menu,
                         @PathVariable("id") Long id) {
-        Restaurant restaurant = restaurantRepository.findOne(id);
+        Restaurant restaurant = restaurantService.findById(id);
         restaurant.getMenus().add(menu);
-        restaurantRepository.save(restaurant);
+        restaurantService.saveRestaurant(restaurant);
         return menu;
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/{id}/menus/{menu_id}")
     public Menu editMenu(@RequestBody Menu updatedMenu,
                          @PathVariable("id") Long id) {
-        Restaurant restaurant = restaurantRepository.findOne(id);
+        Restaurant restaurant = restaurantService.findById(id);
         Menu menu = menuRepository.findOne(updatedMenu.getId());
         restaurant.getMenus().remove(menu);
         restaurant.getMenus().add(updatedMenu);
-        restaurantRepository.save(restaurant);
+        restaurantService.saveRestaurant(restaurant);
         return updatedMenu;
     }
 
