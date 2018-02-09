@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 import rm.model.Menu;
 import rm.model.MenuItem;
@@ -64,6 +65,7 @@ public class RestaurantController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
+
     public Restaurant updateRestaurant(@RequestParam("id") Long id,
                                        @RequestBody Restaurant updatedRestaurant) {
         logger.info("Updating restaurant (id:{}) with: {}", id, updatedRestaurant);
