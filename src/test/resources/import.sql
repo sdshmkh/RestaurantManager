@@ -1,0 +1,1 @@
+insert into restaurant (id, name, description, address, timings) values (1, 'Mithaas', '', '', '');

@@ -14,40 +14,41 @@ import java.util.List;
  */
 @Service
 public class MenuService {
+
     @Autowired
     private MenuRepository menuRepository;
 
-    public Menu findById(Long id){
+    public Menu findById(Long id) {
         Menu menu = menuRepository.findOne(id);
         return menu;
     }
 
-    public List<Menu> findByType(MenuType type){
+    public List<Menu> findByType(MenuType type) {
         List<Menu> menuList = menuRepository.findByType(type);
         return menuList;
     }
 
-    public Menu createMenu(Menu menu, RestaurantService restaurantService, Long restaurantId){
+    public Menu createMenu(Menu menu, RestaurantService restaurantService, Long restaurantId) {
         Restaurant restaurant = restaurantService.findById(restaurantId);
         restaurant.getMenus().add(menu);
         restaurantService.saveRestaaurant(restaurant);
         return menu;
     }
 
-    public Menu saveMenu(Menu menu){
+    public Menu saveMenu(Menu menu) {
         Menu savedMenu = menuRepository.save(menu);
         return savedMenu;
     }
 
-    public Menu editMenu(Long id,Menu updatedMenu){
-        Menu menu=menuRepository.findOne(id);
+    public Menu editMenu(Long id, Menu updatedMenu) {
+        Menu menu = menuRepository.findOne(id);
         menu.setType(updatedMenu.getType());
         menu.setItems(updatedMenu.getItems());
         menuRepository.save(menu);
         return menu;
     }
 
-    public Menu deleteById(Long id){
+    public Menu deleteById(Long id) {
         Menu menu = menuRepository.findOne(id);
         menuRepository.delete(id);
         return menu;

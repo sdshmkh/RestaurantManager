@@ -1,5 +1,7 @@
 package rm.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rm.dao.RestaurantRepository;
@@ -13,6 +15,9 @@ import java.util.List;
  */
 @Service
 public class RestaurantService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RestaurantService.class);
+
     @Autowired
     private RestaurantRepository restaurantRepository;
 
@@ -37,7 +42,7 @@ public class RestaurantService {
         return restaurant;
     }
 
-    public Restaurant updateRestaurantById(Long id,Restaurant updatedRestaurant){
+    public Restaurant updateRestaurantById(Long id, Restaurant updatedRestaurant){
         Restaurant restaurant = restaurantRepository.findOne(id);
         if (restaurant != null) {
             restaurant.setName(updatedRestaurant.getName());
